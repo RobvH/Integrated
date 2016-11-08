@@ -5,9 +5,6 @@ namespace Laracasts\Integrated\Extensions;
 use PHPUnit_Framework_ExpectationFailedException as PHPUnitException;
 use Laracasts\Integrated\Extensions\Traits\WorksWithDatabase;
 use Laracasts\Integrated\JavaScriptAwareEmulator;
-use Laracasts\Integrated\IntegratedException;
-use Laracasts\Integrated\Database\Connection;
-use Laracasts\Integrated\Database\Adapter;
 use WebDriver\Exception\NoSuchElement;
 use Laracasts\Integrated\Emulator;
 use WebDriver\Exception\CurlExec;
@@ -60,12 +57,13 @@ abstract class Selenium extends \PHPUnit_Framework_TestCase implements Emulator,
      * @param  string $requestType
      * @param  string $uri
      * @param  array  $parameters
-     * @return self
+     * @return Selenium
+     * @throws CurlExec
      */
     protected function makeRequest($requestType, $uri, $parameters = [])
     {
         try {
-            $this->closeBrowser();
+            //$this->closeBrowser();
             $this->session = $this->newSession()->open($uri);
             $this->updateCurrentUrl();
         } catch (CurlExec $e) {
@@ -90,9 +88,9 @@ abstract class Selenium extends \PHPUnit_Framework_TestCase implements Emulator,
         $page = $this->currentPage();
 
         try {
-            $link = $this->findByBody($name)->click();
+            $this->findByBody($name)->click();
         } catch (InvalidArgumentException $e) {
-            $link = $this->findByNameOrId($name)->click();
+            $this->findByNameOrId($name)->click();
         }
 
         $this->updateCurrentUrl();
@@ -126,7 +124,7 @@ abstract class Selenium extends \PHPUnit_Framework_TestCase implements Emulator,
      *
      * @param  string $name
      * @param  string $element
-     * @return Crawler
+     * @return Element
      */
     protected function findByNameOrId($name, $element = '*')
     {
@@ -279,7 +277,7 @@ abstract class Selenium extends \PHPUnit_Framework_TestCase implements Emulator,
      *
      * @param  string  $text
      * @param  boolean $accept
-     * @return
+     * @return $this
      */
     public function seeInAlert($text, $accept = true)
     {
@@ -409,7 +407,7 @@ abstract class Selenium extends \PHPUnit_Framework_TestCase implements Emulator,
     /**
      * Halt the process for any number of seconds.
      *
-     * @param  integer $seconds
+     * @param  integer $milliseconds
      * @return static
      */
     public function wait($milliseconds = 4000)
@@ -446,7 +444,6 @@ abstract class Selenium extends \PHPUnit_Framework_TestCase implements Emulator,
     /**
      * Create a new WebDriver session.
      *
-     * @param  string $browser
      * @return Session
      */
     protected function newSession()
